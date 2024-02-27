@@ -28,7 +28,7 @@ import { useAppConfig } from "../store/config";
 import { AuthPage } from "./auth";
 import { getClientConfig } from "../config/client";
 import { ClientApi } from "../client/api";
-import { useAccessStore } from "../store";
+import { useAccessStore, useClipboardList } from "../store";
 
 export function Loading(props: { noLogo?: boolean }) {
   return (
@@ -125,6 +125,7 @@ const loadAsyncGoogleFont = () => {
 function Screen() {
   const config = useAppConfig();
   const location = useLocation();
+  const clipboardList = useClipboardList();
   const isHome = location.pathname === Path.Home;
   const isAuth = location.pathname === Path.Auth;
   const isMobileScreen = useMobileScreen();
@@ -133,7 +134,19 @@ function Screen() {
 
   useEffect(() => {
     loadAsyncGoogleFont();
+    window.addEventListener('message', getLocalStore);
+
+    return () => {
+      window.removeEventListener('message', getLocalStore);
+    }
   }, []);
+
+  const getLocalStore = (event: any) => {
+    if (typeof event.data === 'string') {
+      const data = JSON.parse(event.data);
+      clipboardList.update((state) => (state.data = data ))
+    }
+  }
 
   return (
     <div
