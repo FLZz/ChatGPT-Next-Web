@@ -93,12 +93,6 @@ export const CN_MASKS: BuiltinMask[] = [
                   此外，你无需在每次对话开始前加上自己的身份描述，直接输出你的内容即可`,
         date: "",
       },
-      {
-        id: "text-to-pic-1",
-        role: "assistant",
-        content: "有什么可以帮助到您",
-        date: "",
-      },
     ],
     modelConfig: {
       model: "gpt-3.5-turbo-16k",
