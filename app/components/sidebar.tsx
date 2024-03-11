@@ -157,9 +157,7 @@ export function SideBar(props: { className?: string }) {
         <div className={styles["sidebar-title"]} data-tauri-drag-region>
           内容生成
         </div>
-        <div className={styles["sidebar-sub-title"]}>
-          智能助手
-        </div>
+        <div className={styles["sidebar-sub-title"]}>智能助手</div>
         <div className={styles["sidebar-logo"] + " no-dark"}>
           <ChatGptIcon />
         </div>
@@ -192,7 +190,7 @@ export function SideBar(props: { className?: string }) {
         className={styles["sidebar-body"]}
         onClick={(e) => {
           if (e.target === e.currentTarget) {
-            navigate(Path.Home);
+            // navigate(Path.Home);
           }
         }}
       >
@@ -231,7 +229,7 @@ export function SideBar(props: { className?: string }) {
                 chatStore.newSession();
                 navigate(Path.Chat);
               } else {
-                navigate(Path.NewChat);
+                navigate(Path.NewMasks);
               }
             }}
             shadow

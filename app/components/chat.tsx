@@ -653,7 +653,6 @@ function _Chat() {
   const config = useAppConfig();
   const fontSize = config.fontSize;
   const clipboardList = useClipboardList();
-
   const [showExport, setShowExport] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -697,6 +696,9 @@ function _Chat() {
     },
   );
 
+  // 输出要求，添加prompt说明
+  const [userPromptInput, setUserPromptInput] = useState("");
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(measure, [userInput]);
 
@@ -738,17 +740,19 @@ function _Chat() {
     const matchCommand = chatCommands.match(userInput);
     if (matchCommand.matched) {
       setUserInput("");
+      setUserPromptInput("");
       setPromptHints([]);
       matchCommand.invoke();
       return;
     }
     setIsLoading(true);
     chatStore
-      .onUserInput(userInput, attachImages)
+      .onUserInput(userInput, attachImages, userPromptInput)
       .then(() => setIsLoading(false));
     setAttachImages([]);
     localStorage.setItem(LAST_INPUT_KEY, userInput);
     setUserInput("");
+    setUserPromptInput("");
     setPromptHints([]);
     if (!isMobileScreen) inputRef.current?.focus();
     setAutoScroll(true);
@@ -763,6 +767,7 @@ function _Chat() {
         // if user is selecting a chat command, just trigger it
         matchedChatCommand.invoke();
         setUserInput("");
+        setUserPromptInput("");
       } else {
         // or fill the prompt
         setUserInput(prompt.content);
@@ -1160,7 +1165,7 @@ function _Chat() {
             {!session.topic ? DEFAULT_TOPIC : session.topic}
           </div>
           <div className="window-header-sub-title">
-            {Locale.Chat.SubTitle(session.messages.length)}
+            {/* {Locale.Chat.SubTitle(session.messages.length)} */}
           </div>
         </div>
         <div className="window-actions">
@@ -1216,6 +1221,7 @@ function _Chat() {
             setAutoScroll(false);
           }}
         >
+          <div className={styles["chat-body-title"]}>生成结果</div>
           {messages
             .filter((item) => item.role != "user")
             .map((message, i) => {
@@ -1242,7 +1248,7 @@ function _Chat() {
                     }
                   >
                     <div className={styles["chat-message-container"]}>
-                      <div className={styles["chat-message-header"]}>
+                      {/* <div className={styles["chat-message-header"]}>
                         <div className={styles["chat-message-avatar"]}>
                           <div className={styles["chat-message-edit"]}>
                             <IconButton
@@ -1341,7 +1347,7 @@ function _Chat() {
                             </div>
                           </div>
                         )}
-                      </div>
+                      </div> */}
                       {showTyping && (
                         <div className={styles["chat-message-status"]}>
                           {Locale.Chat.Typing}
@@ -1419,8 +1425,44 @@ function _Chat() {
                   className={styles["chat-input-edit-clipboard-list-item"]}
                   key={index}
                 >
-                  {cl.text}
-                  <span
+                  <div
+                    className={
+                      styles["chat-input-edit-clipboard-list-item-text"]
+                    }
+                  >
+                    {cl.text}
+                  </div>
+
+                  <div className={styles["chat-message-actions"]}>
+                    <div className={styles["chat-input-actions"]}>
+                      <ChatAction
+                        text={"复制"}
+                        icon={<CopyIcon />}
+                        onClick={() => copyToClipboard(cl.text)}
+                      />
+
+                      <ChatAction
+                        text={"引用"}
+                        icon={<EditIcon />}
+                        onClick={() => {
+                          if (!userInput) {
+                            setUserInput(userInput + cl.text);
+                          } else {
+                            setUserInput(userInput + "\n" + cl.text);
+                          }
+                        }}
+                      />
+
+                      <ChatAction
+                        text={"删除"}
+                        icon={<DeleteIcon />}
+                        onClick={() => {
+                          clipboardList.del(cl.text);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {/* <span
                     className={
                       styles["chat-input-edit-clipboard-list-item-ctr"]
                     }
@@ -1436,7 +1478,7 @@ function _Chat() {
                         clipboardList.del(cl.text);
                       }}
                     />{" "}
-                  </span>
+                  </span> */}
                 </div>
               );
             })}
@@ -1465,6 +1507,52 @@ function _Chat() {
                 onSearch("");
               }}
             />
+            <div className={styles["chat-page-title"]}>输出要求</div>
+            <label
+              className={`${styles["chat-input-panel-inner"]} ${
+                attachImages.length != 0
+                  ? styles["chat-input-panel-inner-attach"]
+                  : ""
+              }`}
+              style={{ height: "100px", flex: 0 }}
+              htmlFor="chat-input-propmt"
+            >
+              <textarea
+                id="chat-input-prompt"
+                className={styles["chat-input"]}
+                placeholder={"填写您的额外要求"}
+                onInput={(e) => setUserPromptInput(e.currentTarget.value)}
+                value={userPromptInput}
+                style={{
+                  fontSize: config.fontSize,
+                }}
+              />
+              {attachImages.length != 0 && (
+                <div className={styles["attach-images"]}>
+                  {attachImages.map((image, index) => {
+                    return (
+                      <div
+                        key={index}
+                        className={styles["attach-image"]}
+                        style={{ backgroundImage: `url("${image}")` }}
+                      >
+                        <div className={styles["attach-image-mask"]}>
+                          <DeleteImageButton
+                            deleteImage={() => {
+                              setAttachImages(
+                                attachImages.filter((_, i) => i !== index),
+                              );
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </label>
+
+            <div className={styles["chat-page-title"]}>输入段落</div>
             <label
               className={`${styles["chat-input-panel-inner"]} ${
                 attachImages.length != 0
@@ -1477,13 +1565,12 @@ function _Chat() {
                 id="chat-input"
                 ref={inputRef}
                 className={styles["chat-input"]}
-                placeholder={Locale.Chat.Input(submitKey)}
+                placeholder={"输入需要整合的内容"}
                 onInput={(e) => onInput(e.currentTarget.value)}
                 value={userInput}
                 onKeyDown={onInputKeyDown}
                 onFocus={scrollToBottom}
                 onClick={scrollToBottom}
-                rows={inputRows}
                 autoFocus={autoFocus}
                 style={{
                   fontSize: config.fontSize,

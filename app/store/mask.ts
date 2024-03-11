@@ -17,6 +17,7 @@ export type Mask = {
   modelConfig: ModelConfig;
   lang: Lang;
   builtin: boolean;
+  describe?: string;
 };
 
 export const DEFAULT_MASK_STATE = {
@@ -58,9 +59,28 @@ export const useMaskStore = createPersistStore(
 
       return masks[id];
     },
+    save(maskId: string, mask?: Partial<Mask>) {
+      const masks = get().masks;
+      const oldMask = masks[maskId];
+      if (oldMask) {
+        masks[maskId] = { ...masks[maskId], ...mask };
+      } else {
+        const id = nanoid();
+        masks[id] = {
+          ...createEmptyMask(),
+          ...mask,
+          id,
+          builtin: false,
+        };
+      }
+      set(() => ({ masks }));
+      get().markUpdate();
+    },
     updateMask(id: string, updater: (mask: Mask) => void) {
       const masks = get().masks;
+
       const mask = masks[id];
+      console.log(6666, masks, id);
       if (!mask) return;
       const updateMask = { ...mask };
       updater(updateMask);

@@ -290,7 +290,11 @@ export const useChatStore = createPersistStore(
         get().summarizeSession();
       },
 
-      async onUserInput(content: string, attachImages?: string[]) {
+      async onUserInput(
+        content: string,
+        attachImages?: string[],
+        prompt?: string,
+      ) {
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
 
@@ -330,7 +334,22 @@ export const useChatStore = createPersistStore(
 
         // get recent messages
         const recentMessages = get().getMessagesWithMemory();
-        const sendMessages = recentMessages.concat(userMessage);
+
+        let sendNewMessage = JSON.parse(JSON.stringify(recentMessages));
+        // 处理文章生成发送的数据
+        sendNewMessage.map((mes: { role: string; content: string }) => {
+          if (mes.role == "user") {
+            mes.content = (mes.content as string).replace(
+              "&&",
+              content as string,
+            );
+            mes.content = (mes.content as string).replace(
+              "$$",
+              prompt as string,
+            );
+          }
+        });
+        const sendMessages = sendNewMessage.concat([]);
         const messageIndex = get().currentSession().messages.length + 1;
 
         // save user's and bot's message
@@ -426,6 +445,7 @@ export const useChatStore = createPersistStore(
         const totalMessageCount = session.messages.length;
 
         // in-context prompts
+        console.log(666, session);
         const contextPrompts = session.mask.context.slice();
 
         // system prompts, to get close to OpenAI Web ChatGPT
@@ -496,11 +516,17 @@ export const useChatStore = createPersistStore(
         }
 
         // concat all messages
+        console.log(
+          systemPrompts,
+          longTermMemoryPrompts,
+          contextPrompts,
+          reversedRecentMessages,
+        );
         const recentMessages = [
           ...systemPrompts,
-          ...longTermMemoryPrompts,
+          // ...longTermMemoryPrompts,
           ...contextPrompts,
-          ...reversedRecentMessages.reverse(),
+          // ...reversedRecentMessages.reverse(),
         ];
 
         return recentMessages;
@@ -596,38 +622,38 @@ export const useChatStore = createPersistStore(
           modelConfig.compressMessageLengthThreshold,
         );
 
-        if (
-          historyMsgLength > modelConfig.compressMessageLengthThreshold &&
-          modelConfig.sendMemory
-        ) {
-          api.llm.chat({
-            messages: toBeSummarizedMsgs.concat(
-              createMessage({
-                role: "system",
-                content: Locale.Store.Prompt.Summarize,
-                date: "",
-              }),
-            ),
-            config: {
-              ...modelConfig,
-              stream: true,
-              model: getSummarizeModel(session.mask.modelConfig.model),
-            },
-            onUpdate(message) {
-              session.memoryPrompt = message;
-            },
-            onFinish(message) {
-              console.log("[Memory] ", message);
-              get().updateCurrentSession((session) => {
-                session.lastSummarizeIndex = lastSummarizeIndex;
-                session.memoryPrompt = message; // Update the memory prompt for stored it in local storage
-              });
-            },
-            onError(err) {
-              console.error("[Summarize] ", err);
-            },
-          });
-        }
+        // if (
+        //   historyMsgLength > modelConfig.compressMessageLengthThreshold &&
+        //   modelConfig.sendMemory
+        // ) {
+        //   api.llm.chat({
+        //     messages: toBeSummarizedMsgs.concat(
+        //       createMessage({
+        //         role: "system",
+        //         content: Locale.Store.Prompt.Summarize,
+        //         date: "",
+        //       }),
+        //     ),
+        //     config: {
+        //       ...modelConfig,
+        //       stream: true,
+        //       model: getSummarizeModel(session.mask.modelConfig.model),
+        //     },
+        //     onUpdate(message) {
+        //       session.memoryPrompt = message;
+        //     },
+        //     onFinish(message) {
+        //       console.log("[Memory] ", message);
+        //       get().updateCurrentSession((session) => {
+        //         session.lastSummarizeIndex = lastSummarizeIndex;
+        //         session.memoryPrompt = message; // Update the memory prompt for stored it in local storage
+        //       });
+        //     },
+        //     onError(err) {
+        //       console.error("[Summarize] ", err);
+        //     },
+        //   });
+        // }
       },
 
       updateStat(message: ChatMessage) {

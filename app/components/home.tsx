@@ -55,6 +55,13 @@ const MaskPage = dynamic(async () => (await import("./mask")).MaskPage, {
   loading: () => <Loading noLogo />,
 });
 
+const NewMaskPage = dynamic(
+  async () => (await import("./new-mask")).NewMaskPage,
+  {
+    loading: () => <Loading noLogo />,
+  },
+);
+
 export function useSwitchTheme() {
   const config = useAppConfig();
 
@@ -134,19 +141,19 @@ function Screen() {
 
   useEffect(() => {
     loadAsyncGoogleFont();
-    window.addEventListener('message', getLocalStore);
+    window.addEventListener("message", getLocalStore);
 
     return () => {
-      window.removeEventListener('message', getLocalStore);
-    }
+      window.removeEventListener("message", getLocalStore);
+    };
   }, []);
 
   const getLocalStore = (event: any) => {
-    if (typeof event.data === 'string') {
+    if (typeof event.data === "string") {
       const data = JSON.parse(event.data);
-      clipboardList.update((state) => (state.data = data ))
+      clipboardList.update((state) => (state.data = data));
     }
-  }
+  };
 
   return (
     <div
@@ -170,6 +177,7 @@ function Screen() {
               <Route path={Path.Home} element={<Chat />} />
               <Route path={Path.NewChat} element={<NewChat />} />
               <Route path={Path.Masks} element={<MaskPage />} />
+              <Route path={Path.NewMasks} element={<NewMaskPage />} />
               <Route path={Path.Chat} element={<Chat />} />
               <Route path={Path.Settings} element={<Settings />} />
             </Routes>
