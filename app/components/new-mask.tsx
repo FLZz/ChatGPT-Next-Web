@@ -154,7 +154,7 @@ export function NewMaskPage() {
               <IconButton
                 key="copy"
                 icon={<AddIcon />}
-                text={"尝试使用"}
+                text={"开始使用"}
                 bordered
                 type="primary"
                 onClick={() => {

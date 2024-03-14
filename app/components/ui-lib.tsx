@@ -13,7 +13,15 @@ import MinIcon from "../icons/min.svg";
 import Locale from "../locales";
 
 import { createRoot } from "react-dom/client";
-import React, { HTMLProps, useEffect, useState } from "react";
+import React, {
+  Attributes,
+  HTMLProps,
+  ReactElement,
+  ReactNode,
+  cloneElement,
+  useEffect,
+  useState,
+} from "react";
 import { IconButton } from "./button";
 
 export function Popover(props: {
@@ -485,3 +493,83 @@ export function Selector<T>(props: {
     </div>
   );
 }
+
+interface CheckboxProps {
+  value: string;
+  children: ReactNode;
+  onChange?: (value: string, checked: boolean) => void;
+}
+
+export const Checkbox: React.FC<CheckboxProps> = ({
+  value,
+  children,
+  onChange,
+}) => {
+  const [checked, setChecked] = useState(false);
+
+  const handleCheckboxChange = () => {
+    setChecked(!checked);
+    if (onChange) {
+      onChange(value, !checked);
+    }
+  };
+
+  return (
+    <label className={styles["check-box-label"]}>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={handleCheckboxChange}
+      />
+      {children}
+    </label>
+  );
+};
+
+interface CheckboxGroupProps {
+  style?: React.CSSProperties;
+  onChange: (selectedValues: string[]) => void;
+  children: ReactNode;
+}
+
+export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
+  style,
+  onChange,
+  children,
+}) => {
+  const [selectedValues, setSelectedValues] = useState<string[]>([]);
+
+  const handleCheckboxChange = (value: string, checked: boolean) => {
+    setSelectedValues((prevSelectedValues) => {
+      if (checked) {
+        return [...prevSelectedValues, value];
+      } else {
+        return prevSelectedValues.filter((val) => val !== value);
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (onChange) {
+      onChange(selectedValues);
+    }
+  }, [onChange, selectedValues]);
+
+  const renderChildrenWithProps = (child: ReactNode): ReactNode => {
+    return React.Children.map(child, (childElement: ReactNode) => {
+      if (React.isValidElement(childElement)) {
+        const element = childElement as ReactElement;
+        if (element.type === Checkbox) {
+          return cloneElement(element, { onChange: handleCheckboxChange });
+        } else if (element.props.children) {
+          return cloneElement(element, {
+            children: renderChildrenWithProps(element.props.children),
+          });
+        }
+      }
+      return childElement;
+    });
+  };
+
+  return <div style={style}>{renderChildrenWithProps(children)}</div>;
+};

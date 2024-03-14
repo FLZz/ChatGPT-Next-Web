@@ -74,7 +74,7 @@ const cn = {
       }
       return inputHints + "";
     },
-    Send: "发送",
+    Send: "生成",
     Config: {
       Reset: "清除记忆",
       SaveAs: "存为面具",

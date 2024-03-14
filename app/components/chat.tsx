@@ -79,6 +79,8 @@ import {
   showConfirm,
   showPrompt,
   showToast,
+  Checkbox,
+  CheckboxGroup,
 } from "./ui-lib";
 import { useNavigate } from "react-router-dom";
 import {
@@ -1419,50 +1421,60 @@ function _Chat() {
         <div className={styles["chat-input-edit-panel"]}>
           <div className={styles["chat-input-edit-panel-title"]}>参考文案</div>
           <div className={styles["chat-input-edit-clipboard-list"]}>
-            {clipboardList.data.map((cl: any, index: any) => {
-              return (
-                <div
-                  className={styles["chat-input-edit-clipboard-list-item"]}
-                  key={index}
-                >
+            <CheckboxGroup onChange={(e) => {}}>
+              {clipboardList.data.map((cl: any, index: any) => {
+                return (
                   <div
+                    className={styles["chat-input-edit-clipboard-list-item"]}
+                    key={index}
+                  >
+                    <Checkbox value={cl.text}>
+                      <div
+                        className={
+                          styles["chat-input-edit-clipboard-list-item-text"]
+                        }
+                      >
+                        {cl.text}
+                      </div>
+                    </Checkbox>
+                    {/* <div
                     className={
                       styles["chat-input-edit-clipboard-list-item-text"]
                     }
                   >
                     {cl.text}
-                  </div>
+                  </div> */}
 
-                  <div className={styles["chat-message-actions"]}>
-                    <div className={styles["chat-input-actions"]}>
-                      <ChatAction
-                        text={"复制"}
-                        icon={<CopyIcon />}
-                        onClick={() => copyToClipboard(cl.text)}
-                      />
+                    <div className={styles["chat-message-actions"]}>
+                      <div className={styles["chat-input-actions"]}>
+                        <ChatAction
+                          text={"复制"}
+                          icon={<CopyIcon />}
+                          onClick={() => copyToClipboard(cl.text)}
+                        />
 
-                      <ChatAction
-                        text={"引用"}
-                        icon={<EditIcon />}
-                        onClick={() => {
-                          if (!userInput) {
-                            setUserInput(userInput + cl.text);
-                          } else {
-                            setUserInput(userInput + "\n" + cl.text);
-                          }
-                        }}
-                      />
+                        <ChatAction
+                          text={"引用"}
+                          icon={<EditIcon />}
+                          onClick={() => {
+                            if (!userInput) {
+                              setUserInput(userInput + cl.text);
+                            } else {
+                              setUserInput(userInput + "\n" + cl.text);
+                            }
+                          }}
+                        />
 
-                      <ChatAction
-                        text={"删除"}
-                        icon={<DeleteIcon />}
-                        onClick={() => {
-                          clipboardList.del(cl.text);
-                        }}
-                      />
+                        <ChatAction
+                          text={"删除"}
+                          icon={<DeleteIcon />}
+                          onClick={() => {
+                            clipboardList.del(cl.text);
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  {/* <span
+                    {/* <span
                     className={
                       styles["chat-input-edit-clipboard-list-item-ctr"]
                     }
@@ -1479,9 +1491,10 @@ function _Chat() {
                       }}
                     />{" "}
                   </span> */}
-                </div>
-              );
-            })}
+                  </div>
+                );
+              })}
+            </CheckboxGroup>
           </div>
 
           <div className={styles["chat-input-panel"]}>

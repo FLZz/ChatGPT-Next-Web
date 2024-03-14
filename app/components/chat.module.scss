@@ -567,7 +567,9 @@
         -webkit-box-orient: vertical;
         word-wrap: break-word;
         height: 65px;
+        min-height: 65px;
         transition: all ease 0.3s;
+        flex: 1;
       }
       .chat-message-actions{
         height: 0;
@@ -599,7 +601,7 @@
     flex-direction: column;
     // border-top: var(--border-in-light);
     // box-shadow: var(--card-shadow);
-    height: 60%;
+    height: 45%;
     padding-top: 10px;
 
     .chat-input-actions {
