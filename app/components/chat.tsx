@@ -933,7 +933,7 @@ function _Chat() {
     if (!accessStore.isAuthorized()) {
       copiedHello.content = Locale.Error.Unauthorized;
     }
-    context.push(copiedHello);
+    // context.push(copiedHello);
   }
 
   // preview messages
@@ -1428,15 +1428,15 @@ function _Chat() {
                     className={styles["chat-input-edit-clipboard-list-item"]}
                     key={index}
                   >
-                    <Checkbox value={cl.text}>
-                      <div
-                        className={
-                          styles["chat-input-edit-clipboard-list-item-text"]
-                        }
-                      >
-                        {cl.text}
-                      </div>
-                    </Checkbox>
+                    {/* <Checkbox value={cl.text}> */}
+                    <div
+                      className={
+                        styles["chat-input-edit-clipboard-list-item-text"]
+                      }
+                    >
+                      {cl.text}
+                    </div>
+                    {/* </Checkbox> */}
                     {/* <div
                     className={
                       styles["chat-input-edit-clipboard-list-item-text"]

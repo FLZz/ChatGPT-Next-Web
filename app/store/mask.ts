@@ -5,6 +5,7 @@ import { ModelConfig, useAppConfig } from "./config";
 import { StoreKey } from "../constant";
 import { nanoid } from "nanoid";
 import { createPersistStore } from "../utils/store";
+import { TEST_MASKS } from "../masks/test";
 
 export type Mask = {
   id: string;
@@ -39,6 +40,22 @@ export const createEmptyMask = () =>
     builtin: false,
     createdAt: Date.now(),
   }) as Mask;
+
+export const createDefaultMask = () =>
+  Object.assign(
+    {
+      id: nanoid(),
+      avatar: DEFAULT_MASK_AVATAR,
+      name: TEST_MASKS[0].name,
+      context: [],
+      syncGlobalConfig: true, // use global config as default
+      modelConfig: { ...useAppConfig.getState().modelConfig },
+      lang: getLang(),
+      builtin: false,
+      createdAt: Date.now(),
+    },
+    TEST_MASKS[0],
+  ) as Mask;
 
 export const useMaskStore = createPersistStore(
   { ...DEFAULT_MASK_STATE },
