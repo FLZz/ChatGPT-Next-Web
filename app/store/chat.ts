@@ -395,14 +395,20 @@ export const useChatStore = createPersistStore(
           },
           onFinish(message) {
             botMessage.streaming = false;
+
             if (message) {
-              botMessage.content = message;
+              if (message.includes("抱歉我们开始新的对话吧")) {
+                botMessage.content = "输入内容涉及敏感词汇，请重新选择文段内容";
+              } else {
+                botMessage.content = message;
+              }
               get().onNewMessage(botMessage);
             }
             ChatControllerPool.remove(session.id, botMessage.id);
           },
           onError(error) {
             const isAborted = error.message.includes("aborted");
+            console.log(11111, error);
             botMessage.content +=
               "\n\n" +
               prettyObject({
