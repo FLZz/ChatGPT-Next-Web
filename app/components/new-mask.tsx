@@ -125,7 +125,7 @@ export function NewMaskPage() {
       {editingMask && (
         <div className="modal-mask">
           <Modal
-            title={Locale.Mask.EditModal.Title(editingMask?.builtin)}
+            title={"查看prompt"}
             onClose={closeMaskModal}
             actions={[
               // <IconButton
@@ -184,28 +184,24 @@ export function NewMaskPage() {
               style={{ marginTop: "10px" }}
             >
               <span className={styles["input-container-label"]}>
-                prompt内容: (
-                <span style={{ color: "#555" }}>请保留$$, &&占位符</span>){" "}
+                prompt内容:
               </span>
               <Input
-                defaultValue={
-                  (editingMask.context &&
-                    editingMask.context[1].content) as string
-                }
+                defaultValue={editingMask.prePrompt}
                 type="text"
                 readOnly
                 className={styles["context-content"]}
                 rows={16}
-                onInput={(e) => {
-                  setContent(e.currentTarget.value);
-                  let a = JSON.parse(JSON.stringify(editingMask));
-                  a.context[1] = {
-                    ...a.context[1],
-                    content: e.currentTarget.value,
-                  };
+                // onInput={(e) => {
+                //   setContent(e.currentTarget.value);
+                //   let a = JSON.parse(JSON.stringify(editingMask));
+                //   a.context[1] = {
+                //     ...a.context[1],
+                //     content: e.currentTarget.value,
+                //   };
 
-                  setPromptObj(a);
-                }}
+                //   setPromptObj(a);
+                // }}
               />
             </div>
           </Modal>

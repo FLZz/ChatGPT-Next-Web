@@ -295,6 +295,7 @@ export const useChatStore = createPersistStore(
         content: string,
         attachImages?: string[],
         prompt?: string,
+        continuity?: boolean,
       ) {
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
@@ -322,6 +323,11 @@ export const useChatStore = createPersistStore(
             }),
           );
         }
+        if (session.mask.prePrompt && !continuity) {
+          mContent = session.mask.prePrompt
+            .replace("&&", content)
+            .replace("$$", prompt as string);
+        }
         let userMessage: ChatMessage = createMessage({
           role: "user",
           content: mContent,
@@ -334,33 +340,12 @@ export const useChatStore = createPersistStore(
         });
 
         // get recent messages
-        const recentMessages = get().getMessagesWithMemory();
+        const recentMessages = get().getMessagesWithMemory(continuity);
 
-        let sendNewMessage = JSON.parse(JSON.stringify(recentMessages));
-        let hasUser = false;
-        // 处理文章生成发送的数据
-        sendNewMessage.map((mes: { role: string; content: string }) => {
-          if (mes.role == "user") {
-            hasUser = true;
-            mes.content = (mes.content as string).replace(
-              "&&",
-              content as string,
-            );
-            mes.content = (mes.content as string).replace(
-              "$$",
-              prompt as string,
-            );
-          }
-        });
-
-        let sendMessages = [];
-        if (hasUser) {
-          sendMessages = sendNewMessage.concat([]);
-        } else {
-          sendMessages = sendNewMessage.concat(userMessage);
-        }
+        const sendMessages = recentMessages.concat(userMessage);
         const messageIndex = get().currentSession().messages.length + 1;
-        console.log(2333, sendMessages);
+
+        console.log(2333, sendMessages, session.mask);
         // save user's and bot's message
         get().updateCurrentSession((session) => {
           const savedUserMessage = {
@@ -408,7 +393,6 @@ export const useChatStore = createPersistStore(
           },
           onError(error) {
             const isAborted = error.message.includes("aborted");
-            console.log(11111, error);
             botMessage.content +=
               "\n\n" +
               prettyObject({
@@ -452,7 +436,7 @@ export const useChatStore = createPersistStore(
         } as ChatMessage;
       },
 
-      getMessagesWithMemory() {
+      getMessagesWithMemory(continuity?: boolean) {
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
         const clearContextIndex = session.clearContextIndex ?? 0;
@@ -537,12 +521,18 @@ export const useChatStore = createPersistStore(
           contextPrompts,
           reversedRecentMessages,
         );
-        const recentMessages = [
+        let recentMessages = [
           ...systemPrompts,
           // ...longTermMemoryPrompts,
           ...contextPrompts,
           // ...reversedRecentMessages.reverse(),
         ];
+
+        if (continuity) {
+          recentMessages = recentMessages.concat(
+            reversedRecentMessages.reverse(),
+          );
+        }
 
         return recentMessages;
       },

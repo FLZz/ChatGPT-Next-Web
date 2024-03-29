@@ -19,6 +19,7 @@ export type Mask = {
   lang: Lang;
   builtin: boolean;
   describe?: string;
+  prePrompt?: string;
 };
 
 export const DEFAULT_MASK_STATE = {

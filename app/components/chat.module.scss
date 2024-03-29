@@ -281,24 +281,34 @@
   position: relative;
   height: 100%;
 }
-
-.chat-body {
+.chat-body-warp{
   flex: 1;
-  overflow: auto;
-  overflow-x: hidden;
   padding: 20px;
   position: relative;
   overscroll-behavior: none;
   background-color: #fff;
   margin: 16px;
   border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.5s ease;
+  &.continuity{
+    height: 50%;
+  }
 
   .chat-body-title {
     border-left: 6px  solid var(--primary);
     font-size: 16px;
     font-weight: 600;
     padding-left: 5px;
+    margin-bottom: 8px;
   }
+}
+.chat-body {
+  flex: 1;
+  overflow: auto;
+  overflow-x: hidden;
+  
 }
 
 .chat-body-main-title {
@@ -529,6 +539,11 @@
   margin-right: 0;
   border-radius: 15px;
   padding: 20px;
+  &.continuity{
+    height: 15%;
+    width: auto;
+    margin-right: 16px;
+  }
 
   .chat-input-edit-panel-title{
     font-size: 16px;
