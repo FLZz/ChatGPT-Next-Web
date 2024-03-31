@@ -344,7 +344,7 @@
 }
 
 .chat-message-header {
-  margin-top: 20px;
+  margin-top: 10px;
   display: flex;
   align-items: center;
 
@@ -532,6 +532,7 @@
 
 .chat-input-edit-panel{
   width: 50%;
+  min-width: 50%;
   display: flex;
   flex-direction: column;
   background-color: #fff;

@@ -91,8 +91,9 @@ export const TEST_MASKS: BuiltinMask[] = [
   },
   {
     avatar: "1f3e0",
-    name: "案例综述",
-    describe: "根据用户选定的素材，进行案例综述。",
+    name: "案例综述(Case Review)",
+    describe:
+      "根据用户选定的素材，进行主题案例的综述；使用户能够更便捷对比特定主题的案例信息特征。",
     context: [
       {
         id: "text-to-pic-0",
