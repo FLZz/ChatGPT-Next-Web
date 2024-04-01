@@ -1362,8 +1362,7 @@ function _Chat() {
                                 }}
                               ></IconButton> */}
                             </div>
-                            {isUser ? // <Avatar avatar={config.avatar} />
-                            null : (
+                            {isUser ? null : ( // <Avatar avatar={config.avatar} />
                               <>
                                 {["system"].includes(message.role)
                                   ? // <Avatar avatar="2699-fe0f" />
@@ -1624,7 +1623,9 @@ function _Chat() {
                 id="chat-input"
                 ref={inputRef}
                 className={styles["chat-input"]}
-                placeholder={"输入需要整合的内容"}
+                placeholder={
+                  continuity ? "说如你想聊的内容" : "输入需要整合的内容"
+                }
                 onInput={(e) => onInput(e.currentTarget.value)}
                 value={userInput}
                 onKeyDown={onInputKeyDown}
@@ -1660,7 +1661,7 @@ function _Chat() {
               )}
               <IconButton
                 icon={<SendWhiteIcon />}
-                text={Locale.Chat.Send}
+                text={continuity ? "发送" : Locale.Chat.Send}
                 className={styles["chat-input-send"]}
                 type="primary"
                 onClick={() => doSubmit(userInput)}
