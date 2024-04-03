@@ -1402,11 +1402,13 @@ function _Chat() {
                                       onClick={() => onDelete(message.id ?? i)}
                                     /> */}
 
-                                    <ChatAction
-                                      text={"修改"}
-                                      icon={<EditIcon />}
-                                      onClick={() => setContinuity(true)}
-                                    />
+                                    {!continuity && (
+                                      <ChatAction
+                                        text={"修改"}
+                                        icon={<EditIcon />}
+                                        onClick={() => setContinuity(true)}
+                                      />
+                                    )}
                                     <ChatAction
                                       text={Locale.Chat.Actions.Copy}
                                       icon={<CopyIcon />}
@@ -1624,7 +1626,7 @@ function _Chat() {
                 ref={inputRef}
                 className={styles["chat-input"]}
                 placeholder={
-                  continuity ? "说如你想聊的内容" : "输入需要整合的内容"
+                  continuity ? "输入你的修改要求" : "输入需要整合的内容"
                 }
                 onInput={(e) => onInput(e.currentTarget.value)}
                 value={userInput}
