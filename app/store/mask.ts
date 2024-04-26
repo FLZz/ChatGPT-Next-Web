@@ -20,6 +20,7 @@ export type Mask = {
   builtin: boolean;
   describe?: string;
   prePrompt?: string;
+  noWrite?: boolean;
 };
 
 export const DEFAULT_MASK_STATE = {

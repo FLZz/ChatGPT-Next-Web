@@ -36,6 +36,7 @@ import AutoIcon from "../icons/auto.svg";
 import BottomIcon from "../icons/bottom.svg";
 import StopIcon from "../icons/pause.svg";
 import RobotIcon from "../icons/robot.svg";
+import DocExport from "../icons/doc-export.svg";
 
 import {
   ChatMessage,
@@ -702,6 +703,8 @@ function _Chat() {
   const [userPromptInput, setUserPromptInput] = useState("");
   // 是否连续对话 默认 false
   const [continuity, setContinuity] = useState(false);
+  // 选择输出的素材
+  const [exportList, setExportList] = useState<number[]>([]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(measure, [userInput]);
@@ -1232,6 +1235,27 @@ function _Chat() {
           }`}
         >
           <div className={styles["chat-body-title"]}>生成结果</div>
+          {exportList.length ? (
+            <div>
+              <IconButton
+                icon={<DocExport />}
+                text={"导出docx文件"}
+                className={styles["chat-input-export"]}
+                type="primary"
+                onClick={() => {
+                  let exportString = "";
+                  exportList.map((ll) => {
+                    exportString = exportString + messages[ll].content + "\n";
+                  });
+                  window.parent.postMessage(
+                    { title: session.mask.name, content: exportString },
+                    "*",
+                  );
+                }}
+              />
+            </div>
+          ) : null}
+
           <div
             className={styles["chat-body"]}
             ref={scrollRef}
@@ -1418,6 +1442,31 @@ function _Chat() {
                                         )
                                       }
                                     />
+                                    <Checkbox
+                                      value={`${i}`}
+                                      onChange={(i, check) => {
+                                        if (check) {
+                                          if (!exportList.includes(Number(i))) {
+                                            const newNumbers = [
+                                              ...exportList,
+                                              Number(i),
+                                            ];
+                                            setExportList(
+                                              newNumbers.sort(
+                                                (a: number, b: number) => a - b,
+                                              ),
+                                            );
+                                          }
+                                        } else {
+                                          const newNumbers = exportList.filter(
+                                            (num) => num !== Number(i),
+                                          );
+                                          setExportList(newNumbers);
+                                        }
+                                      }}
+                                    >
+                                      选择导出素材
+                                    </Checkbox>
                                   </>
                                 )}
                               </div>
@@ -1467,7 +1516,7 @@ function _Chat() {
                         styles["chat-input-edit-clipboard-list-item-text"]
                       }
                     >
-                      {cl.text}
+                      {cl.content}
                     </div>
                     {/* </Checkbox> */}
                     {/* <div
@@ -1483,7 +1532,7 @@ function _Chat() {
                         <ChatAction
                           text={"复制"}
                           icon={<CopyIcon />}
-                          onClick={() => copyToClipboard(cl.text)}
+                          onClick={() => copyToClipboard(cl.content)}
                         />
 
                         <ChatAction
@@ -1491,9 +1540,9 @@ function _Chat() {
                           icon={<EditIcon />}
                           onClick={() => {
                             if (!userInput) {
-                              setUserInput(userInput + cl.text);
+                              setUserInput(userInput + cl.content);
                             } else {
-                              setUserInput(userInput + "\n" + cl.text);
+                              setUserInput(userInput + "\n" + cl.content);
                             }
                           }}
                         />
@@ -1502,7 +1551,8 @@ function _Chat() {
                           text={"删除"}
                           icon={<DeleteIcon />}
                           onClick={() => {
-                            clipboardList.del(cl.text);
+                            window.parent.postMessage({ del: cl.id }, "*");
+                            clipboardList.del(cl.content);
                           }}
                         />
                       </div>
@@ -1532,80 +1582,83 @@ function _Chat() {
 
           <div className={styles["chat-input-panel"]}>
             {/* <PromptHints prompts={promptHints} onPromptSelect={onPromptSelect} /> */}
+            {!session.mask.noWrite && (
+              <div>
+                <ChatActions
+                  uploadImage={uploadImage}
+                  setAttachImages={setAttachImages}
+                  setUploading={setUploading}
+                  showPromptModal={() => setShowPromptModal(true)}
+                  scrollToBottom={scrollToBottom}
+                  hitBottom={hitBottom}
+                  uploading={uploading}
+                  showPromptHints={() => {
+                    // Click again to close
+                    if (promptHints.length > 0) {
+                      setPromptHints([]);
+                      return;
+                    }
 
-            <ChatActions
-              uploadImage={uploadImage}
-              setAttachImages={setAttachImages}
-              setUploading={setUploading}
-              showPromptModal={() => setShowPromptModal(true)}
-              scrollToBottom={scrollToBottom}
-              hitBottom={hitBottom}
-              uploading={uploading}
-              showPromptHints={() => {
-                // Click again to close
-                if (promptHints.length > 0) {
-                  setPromptHints([]);
-                  return;
-                }
-
-                inputRef.current?.focus();
-                setUserInput("/");
-                onSearch("");
-              }}
-            />
-            <div
-              className={styles["chat-page-title"]}
-              style={{ display: continuity ? "none" : "" }}
-            >
-              输出要求
-            </div>
-            <label
-              className={`${styles["chat-input-panel-inner"]} ${
-                attachImages.length != 0
-                  ? styles["chat-input-panel-inner-attach"]
-                  : ""
-              }`}
-              style={{
-                height: "100px",
-                flex: 0,
-                display: continuity ? "none" : "",
-              }}
-              htmlFor="chat-input-propmt"
-            >
-              <textarea
-                id="chat-input-prompt"
-                className={styles["chat-input"]}
-                placeholder={"填写您的额外要求"}
-                onInput={(e) => setUserPromptInput(e.currentTarget.value)}
-                value={userPromptInput}
-                style={{
-                  fontSize: config.fontSize,
-                }}
-              />
-              {attachImages.length != 0 && (
-                <div className={styles["attach-images"]}>
-                  {attachImages.map((image, index) => {
-                    return (
-                      <div
-                        key={index}
-                        className={styles["attach-image"]}
-                        style={{ backgroundImage: `url("${image}")` }}
-                      >
-                        <div className={styles["attach-image-mask"]}>
-                          <DeleteImageButton
-                            deleteImage={() => {
-                              setAttachImages(
-                                attachImages.filter((_, i) => i !== index),
-                              );
-                            }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
+                    inputRef.current?.focus();
+                    setUserInput("/");
+                    onSearch("");
+                  }}
+                />
+                <div
+                  className={styles["chat-page-title"]}
+                  style={{ display: continuity ? "none" : "" }}
+                >
+                  输出要求
                 </div>
-              )}
-            </label>
+                <label
+                  className={`${styles["chat-input-panel-inner"]} ${
+                    attachImages.length != 0
+                      ? styles["chat-input-panel-inner-attach"]
+                      : ""
+                  }`}
+                  style={{
+                    height: "100px",
+                    flex: 0,
+                    display: continuity ? "none" : "",
+                  }}
+                  htmlFor="chat-input-propmt"
+                >
+                  <textarea
+                    id="chat-input-prompt"
+                    className={styles["chat-input"]}
+                    placeholder={"填写您的额外要求"}
+                    onInput={(e) => setUserPromptInput(e.currentTarget.value)}
+                    value={userPromptInput}
+                    style={{
+                      fontSize: config.fontSize,
+                    }}
+                  />
+                  {attachImages.length != 0 && (
+                    <div className={styles["attach-images"]}>
+                      {attachImages.map((image, index) => {
+                        return (
+                          <div
+                            key={index}
+                            className={styles["attach-image"]}
+                            style={{ backgroundImage: `url("${image}")` }}
+                          >
+                            <div className={styles["attach-image-mask"]}>
+                              <DeleteImageButton
+                                deleteImage={() => {
+                                  setAttachImages(
+                                    attachImages.filter((_, i) => i !== index),
+                                  );
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </label>
+              </div>
+            )}
 
             <div
               className={styles["chat-page-title"]}
@@ -1628,6 +1681,7 @@ function _Chat() {
                 placeholder={
                   continuity ? "输入你的修改要求" : "输入需要整合的内容"
                 }
+                readOnly={session.mask.noWrite}
                 onInput={(e) => onInput(e.currentTarget.value)}
                 value={userInput}
                 onKeyDown={onInputKeyDown}

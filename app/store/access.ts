@@ -24,7 +24,7 @@ const DEFAULT_ACCESS_STATE = {
 
   // openai
   openaiUrl: "https://metacivitasqa.com/api/",
-  openaiApiKey: "sk-48e76982-f48e-4ccf-91fd-967b8bbbd3d3",
+  openaiApiKey: "sk-5ff7e64b-c96e-4c2c-b3b2-4ac0e157fc3d",
 
   // azure
   azureUrl: "",

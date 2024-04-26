@@ -387,6 +387,146 @@ export const useChatStore = createPersistStore(
               } else {
                 botMessage.content = message;
               }
+              if (session.mask.noWrite && message.includes("产业")) {
+                get().autoOutPush(message);
+              }
+              get().onNewMessage(botMessage);
+            }
+            ChatControllerPool.remove(session.id, botMessage.id);
+          },
+          onError(error) {
+            const isAborted = error.message.includes("aborted");
+            botMessage.content +=
+              "\n\n" +
+              prettyObject({
+                error: true,
+                message: error.message,
+              });
+            botMessage.streaming = false;
+            userMessage.isError = !isAborted;
+            botMessage.isError = !isAborted;
+            get().updateCurrentSession((session) => {
+              session.messages = session.messages.concat();
+            });
+            ChatControllerPool.remove(
+              session.id,
+              botMessage.id ?? messageIndex,
+            );
+
+            console.error("[Chat] failed ", error);
+          },
+          onController(controller) {
+            // collect controller for stop/retry
+            ChatControllerPool.addController(
+              session.id,
+              botMessage.id ?? messageIndex,
+              controller,
+            );
+          },
+        });
+      },
+
+      autoOutPush(mes: string, count: number = 0) {
+        const session = get().currentSession();
+        const modelConfig = session.mask.modelConfig;
+        const autoTall = [
+          {
+            content: `【任务设定】
+            背景:我在撰写一个产业分析报告，受众都是从事城市规划或者相关行业的专业人士。
+            角色:你是一个资深的产业分析专家，擅长写专业、有深度且逻辑清晰的产业分析报告。
+            任务:请你按照【任务要求】，以提供的基础素材为依据，编写一篇3000字以上的产业分析报告，要遵循叙述模
+            型，保持报告章节间的连贯性和专业性。
+            【任务要求】
+            <报告大纲>
+            {$$$}
+            <创作流程>
+            1、文章输出:文章将按照大纲分成多个回答输出，现在请先根据上面的大纲，按章节结构输出前三个部分的内
+            容，内容尽量详细，与素材高度相关。
+            <语言风格>
+            1、专业严谨:确保报告的结论和论点逻辑清晰，便于读者理解。
+            2、客观准确:使用精确的数据和清晰的逻辑支持分析和结论。
+            3、正式客观:语言保持正式和专业，避免使用口语化的表达。
+            <段落风格>
+            1、段落清晰:每个段落都有明确的中心，表述清晰
+            2、逻辑明确:段落之间的逻辑关系明确，容易理解。
+            3、
+            重要信息突出:通过段落的安排，确保重要信息或重要事件得到突出。`,
+          },
+          {
+            content: `【任务设定】
+            背景:我在撰写一个产业分析报告，受众都是从事城市规划或者相关行业的专业人士。
+            角色:你是一个资深的产业分析专家，擅长写专业、有深度且逻辑清晰的产业分析报告。
+            任务:请你按照【任务要求】，以提供的基础素材为依据，编写一篇3000字以上的产业分析报告，要遵循叙述模
+            型，保持报告章节间的连贯性和专业性。
+            【任务要求】
+            <报告大纲>
+            {$$$}
+            <创作流程>
+      1、文章输出:文章将按照大纲分成多个回答输出，现在请先根据上面的大纲，按章节结构输出后三个部分的内
+      容，内容尽量详细，与素材高度相关。
+      <语言风格>
+      1、专业严谨:确保报告的结论和论点逻辑清晰，便于读者理解。
+      2、客观准确:使用精确的数据和清晰的逻辑支持分析和结论。
+      3、正式客观:语言保持正式和专业，避免使用口语化的表达。
+      <段落风格>
+      1、段落清晰:每个段落都有明确的中心，表述清晰。
+      2、逻辑明确:段落之间的逻辑关系明确，容易理解。
+      3、重要信息突出:通过段落的安排，确保重要信息或重要事件得到突出。`,
+          },
+        ];
+        if (count >= autoTall.length) {
+          return;
+        }
+        let userMessage: ChatMessage = createMessage({
+          role: "user",
+          content: autoTall[count].content?.replace("$$$", mes),
+        });
+        const botMessage: ChatMessage = createMessage({
+          role: "assistant",
+          streaming: true,
+          model: modelConfig.model,
+        });
+
+        get().updateCurrentSession((session) => {
+          const savedUserMessage = {
+            ...userMessage,
+          };
+          session.messages = session.messages.concat([
+            savedUserMessage,
+            botMessage,
+          ]);
+        });
+        // get recent messages
+        const recentMessages = get().getMessagesWithMemory(true);
+
+        const messageIndex = get().currentSession().messages.length + 1;
+
+        var api: ClientApi;
+        if (modelConfig.model.startsWith("gemini")) {
+          api = new ClientApi(ModelProvider.GeminiPro);
+        } else {
+          api = new ClientApi(ModelProvider.GPT);
+        }
+        console.log(777, recentMessages);
+        // make request
+        api.llm.chat({
+          messages: recentMessages,
+          config: { ...modelConfig, stream: true },
+          onUpdate(message) {
+            botMessage.streaming = true;
+            if (message) {
+              botMessage.content = message;
+            }
+            get().updateCurrentSession((session) => {
+              session.messages = session.messages.concat();
+            });
+          },
+          onFinish(message) {
+            botMessage.streaming = false;
+
+            if (message) {
+              botMessage.content = message;
+              get().autoOutPush(message, count + 1);
               get().onNewMessage(botMessage);
             }
             ChatControllerPool.remove(session.id, botMessage.id);

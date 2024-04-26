@@ -149,9 +149,14 @@ function Screen() {
   }, []);
 
   const getLocalStore = (event: any) => {
+    console.log(8888, event);
     if (typeof event.data === "string") {
       const data = JSON.parse(event.data);
       clipboardList.update((state) => (state.data = data));
+    }
+    if (typeof event.data === "object" && event.data.DCI_token) {
+      const DCI_token = event.data.DCI_token;
+      window.localStorage.setItem("DCI_token", DCI_token);
     }
   };
 

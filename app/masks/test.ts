@@ -122,4 +122,46 @@ export const TEST_MASKS: BuiltinMask[] = [
     输出：不需要做任何说明和介绍，直接输出综述内容。
     提供的素材资料：&&`,
   },
+  {
+    avatar: "1f3e0",
+    name: "优秀--产业分析报告构思大纲",
+    describe: "优秀--产业分析报告构思大纲",
+    context: [
+      {
+        id: "text-to-pic-0",
+        role: "user",
+        content: `背景:我是一位产业分析员，我需要总结产业分析报告的构思大纲，以便更好地展开报告的撰写。
+        角色:希望你扮演一个擅长产业分析的写作导师，能够提供清晰的指导和建议。
+        任务:我将发送一些产业分析相关的基础素材给你，请你依据并参考我提供的素材，提取有用的信息，帮我总结产业
+        报告的构思大纲。
+        要求:详细描述产业分析的标题和构思大纲，包括产业的类型定义、与之相关的规划、产业规划的时间演变过程、空
+        间演变过程等要素。请以markdown格式尽量提供具体和有逻辑性的描述，以便更好地展开写作，大纲只能分为6个
+        部分。你理解任务后只需要回复明白，等待我给你发送基础素材。在接下来的对话中，你只需要把结果直接输出，不
+        需要其他多余的解释。`,
+        date: "",
+      },
+      {
+        id: "text-to-pic-1",
+        role: "system",
+        content: `明白。`,
+        date: "",
+      },
+    ],
+    modelConfig: {
+      model: "gpt-4",
+      temperature: 1,
+      max_tokens: 16000,
+      presence_penalty: 0,
+      frequency_penalty: 0,
+      sendMemory: true,
+      historyMessageCount: 4,
+      compressMessageLengthThreshold: 1000,
+    },
+    lang: "cn",
+    builtin: true,
+    hideContext: true,
+    createdAt: 1688899480810,
+    prePrompt: ``,
+    noWrite: true,
+  },
 ];
