@@ -21,6 +21,7 @@ export type Mask = {
   describe?: string;
   prePrompt?: string;
   noWrite?: boolean;
+  autoTall?: any[];
 };
 
 export const DEFAULT_MASK_STATE = {
