@@ -469,12 +469,15 @@ export const useChatStore = createPersistStore(
         //     3、重要信息突出：通过段落的安排，确保重要信息或重要事件得到突出。`,
         //   },
         // ];
-        if (count >= session.mask.autoTall.length) {
+        if (count >= (session.mask.autoTall as Array<string>).length) {
           return;
         }
         let userMessage: ChatMessage = createMessage({
           role: "user",
-          content: session.mask.autoTall[count].content?.replace("$$$", mes),
+          content: (session.mask.autoTall as Array<string>)[count]?.replace(
+            "$$$",
+            mes,
+          ),
         });
         const botMessage: ChatMessage = createMessage({
           role: "assistant",
