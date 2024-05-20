@@ -640,6 +640,68 @@ export function EditMessageModal(props: { onClose: () => void }) {
   );
 }
 
+export function ExportDocModal(props: {
+  onClose: () => void;
+  docResult: any;
+  clipboardList: any;
+  session: any;
+}) {
+  return (
+    <div className="modal-mask">
+      <Modal title={"导出生成结果"} onClose={props.onClose}>
+        <div style={{ minHeight: "40vh" }}>
+          {props.docResult.map((d: any, i: number) => {
+            return (
+              <div key={i}>
+                {" "}
+                <IconButton
+                  icon={<DocExport />}
+                  onClick={() => {
+                    let exp = "";
+                    // 文章第一部分
+                    console.log(props.docResult);
+                    d.list
+                      .filter((x: any) => x.role == "assistant")
+                      .map((t: any, ii: number) => {
+                        if (ii == 0) {
+                          exp =
+                            exp +
+                            t.content +
+                            "\n\n 808E9021C332636B18935A84B4FBE736 \n";
+                        } else {
+                          exp = exp + t.content + "\n";
+                        }
+                      });
+                    // 文章第二部分 原文
+                    let source = d.list.filter((x: any) => x.role == "user")[0]
+                      .content;
+                    exp =
+                      exp +
+                      "\n 808E9021C332636B18935A84B4FBE736 " +
+                      "\n\n## 素材来源 \n\n";
+                    props.clipboardList.data.map((p: any) => {
+                      if (source.includes(p.content)) {
+                        console.log(p);
+                        exp = exp + `${p.content}` + `\n\n——${p.filename} \n\n`;
+                      }
+                    });
+                    console.log(111111, exp);
+                    window.parent.postMessage(
+                      { title: props.session.topic, content: exp },
+                      "*",
+                    );
+                  }}
+                />
+                导出第{i + 1}次生成结果
+              </div>
+            );
+          })}
+        </div>
+      </Modal>
+    </div>
+  );
+}
+
 export function DeleteImageButton(props: { deleteImage: () => void }) {
   return (
     <div className={styles["delete-image"]} onClick={props.deleteImage}>
@@ -705,6 +767,9 @@ function _Chat() {
   const [continuity, setContinuity] = useState(false);
   // 选择输出的素材
   const [exportList, setExportList] = useState<number[]>([]);
+  // 选择引用的素材
+  const [quoteList, setQuoteList] = useState<any[]>([]);
+  const [showExportDoc, setShowExportDoc] = useState(false);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(measure, [userInput]);
@@ -754,7 +819,13 @@ function _Chat() {
     }
     setIsLoading(true);
     chatStore
-      .onUserInput(userInput, attachImages, userPromptInput, continuity)
+      .onUserInput(
+        userInput,
+        attachImages,
+        userPromptInput,
+        continuity,
+        new Date().getTime(),
+      )
       .then(() => setIsLoading(false));
     setAttachImages([]);
     localStorage.setItem(LAST_INPUT_KEY, userInput);
@@ -1234,27 +1305,40 @@ function _Chat() {
             continuity ? styles["continuity"] : ""
           }`}
         >
-          <div className={styles["chat-body-title"]}>生成结果</div>
-          {exportList.length ? (
-            <div>
-              <IconButton
-                icon={<DocExport />}
-                text={"导出docx文件"}
-                className={styles["chat-input-export"]}
-                type="primary"
-                onClick={() => {
-                  let exportString = "";
-                  exportList.map((ll) => {
-                    exportString = exportString + messages[ll].content + "\n";
-                  });
-                  window.parent.postMessage(
-                    { title: session.mask.name, content: exportString },
-                    "*",
-                  );
-                }}
-              />
-            </div>
-          ) : null}
+          <div className={styles["chat-body-title"]}>
+            生成结果{" "}
+            {session.messages.length && session.mask.noWrite ? (
+              <div>
+                <IconButton
+                  icon={<DocExport />}
+                  text={"导出docx文件"}
+                  className={styles["chat-input-export"]}
+                  type="primary"
+                  onClick={() => {
+                    // let exportString = "";
+                    // exportList.map((ll) => {
+                    //   exportString = exportString + messages[ll].content + "\n";
+                    // });
+                    // if (quoteList.length) {
+                    //   exportString = exportString + "\n 808E9021C332636B18935A84B4FBE736 " + "\n\n## 素材来源 \n\n"
+                    //   quoteList.map((qq) => {
+                    //     exportString = exportString + `<u>${qq.content}</u>` + `\n\n——${qq.filename} \n\n`
+                    //   })
+                    // }
+                    // console.log(111111, exportString)
+                    // window.parent.postMessage(
+                    //   { title: session.mask.name, content: exportString },
+                    //   "*",
+                    // );
+                    // console.log(session.messages)
+
+                    // session.messages[0].content
+                    setShowExportDoc(true);
+                  }}
+                />
+              </div>
+            ) : null}
+          </div>
 
           <div
             className={styles["chat-body"]}
@@ -1426,7 +1510,7 @@ function _Chat() {
                                       onClick={() => onDelete(message.id ?? i)}
                                     /> */}
 
-                                    {!continuity && (
+                                    {!continuity && !session.mask.noWrite && (
                                       <ChatAction
                                         text={"修改"}
                                         icon={<EditIcon />}
@@ -1442,7 +1526,7 @@ function _Chat() {
                                         )
                                       }
                                     />
-                                    <Checkbox
+                                    {/* <Checkbox
                                       value={`${i}`}
                                       onChange={(i, check) => {
                                         if (check) {
@@ -1466,7 +1550,7 @@ function _Chat() {
                                       }}
                                     >
                                       选择导出素材
-                                    </Checkbox>
+                                    </Checkbox> */}
                                   </>
                                 )}
                               </div>
@@ -1517,6 +1601,7 @@ function _Chat() {
                       }
                     >
                       {cl.content}
+                      {cl.filename && <p>来源:{cl.filename}</p>}
                     </div>
                     {/* </Checkbox> */}
                     {/* <div
@@ -1539,20 +1624,32 @@ function _Chat() {
                           text={"引用"}
                           icon={<EditIcon />}
                           onClick={() => {
+                            if (userInput.includes(cl.content)) {
+                              return;
+                            }
                             if (!userInput) {
                               setUserInput(userInput + cl.content);
                             } else {
                               setUserInput(userInput + "\n" + cl.content);
                             }
+                            quoteList.push(cl);
+                            setQuoteList(quoteList);
                           }}
                         />
 
                         <ChatAction
-                          text={"删除"}
+                          text={"删除引用"}
                           icon={<DeleteIcon />}
                           onClick={() => {
-                            window.parent.postMessage({ del: cl.id }, "*");
-                            clipboardList.del(cl.content);
+                            // window.parent.postMessage({ del: cl.id }, "*");
+                            // clipboardList.del(cl.content);
+
+                            setUserInput(userInput.replace(cl.content, ""));
+                            const nlist = quoteList.filter(
+                              (a) => a.content != cl.content,
+                            );
+                            setQuoteList(nlist);
+                            console.log(quoteList);
                           }}
                         />
                       </div>
@@ -1736,6 +1833,15 @@ function _Chat() {
           onClose={() => {
             setIsEditingMessage(false);
           }}
+        />
+      )}
+
+      {showExportDoc && (
+        <ExportDocModal
+          onClose={() => setShowExportDoc(false)}
+          docResult={session.creatObjList}
+          clipboardList={clipboardList}
+          session={session}
         />
       )}
     </div>

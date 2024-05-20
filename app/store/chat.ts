@@ -28,6 +28,7 @@ export type ChatMessage = RequestMessage & {
   isError?: boolean;
   id: string;
   model?: ModelType;
+  creatKey?: string;
 };
 
 export function createMessage(override: Partial<ChatMessage>): ChatMessage {
@@ -58,6 +59,8 @@ export interface ChatSession {
   clearContextIndex?: number;
 
   mask: Mask;
+
+  creatObjList?: any[];
 }
 
 export const DEFAULT_TOPIC = Locale.Store.DefaultTopic;
@@ -81,6 +84,8 @@ function createEmptySession(): ChatSession {
     lastSummarizeIndex: 0,
 
     mask: createDefaultMask(),
+
+    creatObjList: [],
   };
 }
 
@@ -296,6 +301,7 @@ export const useChatStore = createPersistStore(
         attachImages?: string[],
         prompt?: string,
         continuity?: boolean,
+        key?: any,
       ) {
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
@@ -388,7 +394,7 @@ export const useChatStore = createPersistStore(
                 botMessage.content = message;
               }
               if (session.mask.noWrite && message.includes("产业")) {
-                get().autoOutPush(message);
+                get().autoOutPush(message, 0);
               }
               get().onNewMessage(botMessage);
             }
@@ -470,6 +476,17 @@ export const useChatStore = createPersistStore(
         //   },
         // ];
         if (count >= (session.mask.autoTall as Array<string>).length) {
+          let preObj = null;
+          if (session.creatObjList?.length) {
+            preObj = session.creatObjList[session.creatObjList.length - 1];
+          }
+          session.creatObjList?.push({
+            end: session.messages.length - 1,
+            list: session.messages.slice(
+              (preObj && preObj.end) || 0,
+              session.messages.length,
+            ),
+          });
           return;
         }
         let userMessage: ChatMessage = createMessage({

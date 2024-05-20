@@ -179,31 +179,44 @@ export function NewMaskPage() {
               ></input>
             </div>
 
-            <div
-              className={styles["input-container"]}
-              style={{ marginTop: "10px" }}
-            >
-              <span className={styles["input-container-label"]}>
-                prompt内容:
-              </span>
-              <Input
-                defaultValue={editingMask.prePrompt}
-                type="text"
-                readOnly
-                className={styles["context-content"]}
-                rows={16}
-                // onInput={(e) => {
-                //   setContent(e.currentTarget.value);
-                //   let a = JSON.parse(JSON.stringify(editingMask));
-                //   a.context[1] = {
-                //     ...a.context[1],
-                //     content: e.currentTarget.value,
-                //   };
-
-                //   setPromptObj(a);
-                // }}
-              />
-            </div>
+            {editingMask.autoTall ? (
+              editingMask.autoTall.map((p, index) => {
+                return (
+                  <div
+                    className={styles["input-container"]}
+                    style={{ marginTop: "10px" }}
+                    key={index}
+                  >
+                    <span className={styles["input-container-label"]}>
+                      prompt{index + 1}内容:
+                    </span>
+                    <Input
+                      defaultValue={p}
+                      type="text"
+                      readOnly
+                      className={styles["context-content"]}
+                      rows={16}
+                    />
+                  </div>
+                );
+              })
+            ) : (
+              <div
+                className={styles["input-container"]}
+                style={{ marginTop: "10px" }}
+              >
+                <span className={styles["input-container-label"]}>
+                  prompt内容:
+                </span>
+                <Input
+                  defaultValue={editingMask.prePrompt}
+                  type="text"
+                  readOnly
+                  className={styles["context-content"]}
+                  rows={16}
+                />
+              </div>
+            )}
           </Modal>
         </div>
       )}
