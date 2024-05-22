@@ -21,10 +21,8 @@ export async function copyToClipboard(text: string) {
       await navigator.clipboard.writeText(text);
     }
 
-    console.log(1111)
     showToast(Locale.Copy.Success);
   } catch (error) {
-    console.log(22222)
     const textArea = document.createElement("textarea");
     textArea.value = text;
     document.body.appendChild(textArea);

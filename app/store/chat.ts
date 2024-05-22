@@ -351,7 +351,6 @@ export const useChatStore = createPersistStore(
         const sendMessages = recentMessages.concat(userMessage);
         const messageIndex = get().currentSession().messages.length + 1;
 
-        console.log(2333, sendMessages, session.mask);
         // save user's and bot's message
         get().updateCurrentSession((session) => {
           const savedUserMessage = {
@@ -522,7 +521,6 @@ export const useChatStore = createPersistStore(
         } else {
           api = new ClientApi(ModelProvider.GPT);
         }
-        console.log(777, recentMessages);
         // make request
         api.llm.chat({
           messages: recentMessages,
@@ -599,7 +597,6 @@ export const useChatStore = createPersistStore(
         const totalMessageCount = session.messages.length;
 
         // in-context prompts
-        console.log(666, session);
         const contextPrompts = session.mask.context.slice();
 
         // system prompts, to get close to OpenAI Web ChatGPT

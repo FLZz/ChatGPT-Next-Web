@@ -659,7 +659,6 @@ export function ExportDocModal(props: {
                   onClick={() => {
                     let exp = "";
                     // 文章第一部分
-                    console.log(props.docResult);
                     d.list
                       .filter((x: any) => x.role == "assistant")
                       .map((t: any, ii: number) => {
@@ -681,11 +680,9 @@ export function ExportDocModal(props: {
                       "\n\n## 素材来源 \n\n";
                     props.clipboardList.data.map((p: any) => {
                       if (source.includes(p.content)) {
-                        console.log(p);
                         exp = exp + `${p.content}` + `\n\n——${p.filename} \n\n`;
                       }
                     });
-                    console.log(111111, exp);
                     window.parent.postMessage(
                       { title: props.session.topic, content: exp },
                       "*",
@@ -1315,24 +1312,6 @@ function _Chat() {
                   className={styles["chat-input-export"]}
                   type="primary"
                   onClick={() => {
-                    // let exportString = "";
-                    // exportList.map((ll) => {
-                    //   exportString = exportString + messages[ll].content + "\n";
-                    // });
-                    // if (quoteList.length) {
-                    //   exportString = exportString + "\n 808E9021C332636B18935A84B4FBE736 " + "\n\n## 素材来源 \n\n"
-                    //   quoteList.map((qq) => {
-                    //     exportString = exportString + `<u>${qq.content}</u>` + `\n\n——${qq.filename} \n\n`
-                    //   })
-                    // }
-                    // console.log(111111, exportString)
-                    // window.parent.postMessage(
-                    //   { title: session.mask.name, content: exportString },
-                    //   "*",
-                    // );
-                    // console.log(session.messages)
-
-                    // session.messages[0].content
                     setShowExportDoc(true);
                   }}
                 />
@@ -1649,7 +1628,6 @@ function _Chat() {
                               (a) => a.content != cl.content,
                             );
                             setQuoteList(nlist);
-                            console.log(quoteList);
                           }}
                         />
                       </div>

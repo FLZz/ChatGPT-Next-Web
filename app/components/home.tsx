@@ -149,7 +149,6 @@ function Screen() {
   }, []);
 
   const getLocalStore = (event: any) => {
-    console.log(8888, event);
     if (typeof event.data === "string") {
       const data = JSON.parse(event.data);
       clipboardList.update((state) => (state.data = data));

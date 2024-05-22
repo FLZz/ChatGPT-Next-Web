@@ -100,7 +100,6 @@ export const useMaskStore = createPersistStore(
       const masks = get().masks;
 
       const mask = masks[id];
-      console.log(6666, masks, id);
       if (!mask) return;
       const updateMask = { ...mask };
       updater(updateMask);
